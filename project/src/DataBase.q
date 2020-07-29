@@ -4,7 +4,7 @@ t:([]sym:enlist`MSFT;bid:enlist 50;bidSize:enlist 10;ask:enlist 80;askSize:enlis
 //! Needs documentation.
 bidGen:{[lastBid;lastAsk]
 	$[0=lastAsk-lastBid;
-		first[t`bid]+floor 0.5+rand[0.1*a]-rand 0.1*a:first t`bid;
+		first[t`bid]+genRand[f;f:first t`bid;.cfg.bidVar];
 		lastBid+rand ceiling[rand abs 0.1*1+lastAsk-lastBid],0]
  }
 
@@ -16,14 +16,14 @@ bidSizeGen:{[lastBid;lastAsk]
  }
 
 //! Needs documentation.
-askGen:{[lastBid;lastAsk]
+askBidGen:{[lastBid;lastAsk]
 	newBid:bidGen[lastBid;lastAsk];
 
     $[0=lastAsk-lastBid;
 		newAsk:max(newBid;first[t`ask]+floor 0.5+rand[0.1*b]-rand 0.1*b:first t`ask);
 		newAsk:max(newBid;lastAsk-rand(ceiling rand abs 0.1*1+lastAsk-newBid),0)];
 
-	newBid,newAsk
+	`bid`ask!newBid,newAsk
  }
 
 //! Needs documentation.
@@ -35,11 +35,15 @@ askSizeGen:{[lastBid;lastAsk]
 
 //! Needs documentation.
 quoteGen:{[lastBid;lastAsk]
-	newBid:askGen[lastBid;lastAsk][0]; 
-	newAsk:askGen[lastBid;lastAsk][1];
-	newBidSize:bidSizeGen[lastBid;lastAsk]; 
-	newAskSize:askSizeGen[lastBid;lastAsk];
-	enlist`MSFT,newBid,newBidSize,newAsk,newAskSize,.z.p
+	a:askBidGen[lastBid;lastAsk]; / Generate new ask and bid
+	newBidSize:bidSizeGen[lastBid;lastAsk]; / Get new bid size 
+	newAskSize:askSizeGen[lastBid;lastAsk]; / Get new ask size
+	enlist`MSFT,a[`bid],newBidSize,a[`ask],newAskSize,.z.p / Return table row
+ }
+
+//!
+genRand:{[x;y;v]
+	x+rand[2*vx]-vx:v*x
  }
 
 //! Needs documentation.
