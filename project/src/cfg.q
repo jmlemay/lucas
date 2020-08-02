@@ -1,10 +1,3 @@
-/ Define configuration parameters.
+/ Define dictionary of configuration parameters.
 
-//! Description.
-.cfg.init:{[]
-	/ Read params.csv and define parameters in the .cfg namespace.
-	//! Implement me
- }
-
-/ Run the init function
-.cfg.init[]
+cfg:`askVar`bidVar`bidSizeVar`askSizeVar!0.1 0.1 0.1 0.1
