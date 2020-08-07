@@ -1,5 +1,5 @@
 name		,val	,typ	,description
 askVar		,0.1	,f		,Variance for generating random ask values
 bidVar		,0.1	,f		,Variance for generating random bid values
-bidSizeVar	,0.1	,f		,Variance for generating random bid size values
-askSizeVar	,0.1	,f		,Variance for generating random ask size values
+bidSizeVar	,0.2	,f		,Variance for generating random bid size values
+askSizeVar	,0.2	,f		,Variance for generating random ask size values

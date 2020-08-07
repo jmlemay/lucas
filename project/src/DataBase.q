@@ -1,8 +1,8 @@
 / Initialize data table.
 t:([]sym:enlist`MSFT;bid:enlist 50;bidSize:enlist 10;ask:enlist 80;askSize:enlist 30;time:.z.p)
 
-/ Define varicance parameters.
-cfg:`askVar`bidVar`bidSizeVar`askSizeVar!0.1 0.1 0.1 0.1
+/ Reads varicance parameters from params.csv
+cfg:1!("SFCS"; enlist ",") 0: `:/Users/lucascalixto/git/lucas/project/cfg/params.csv
 
 / Generates a random integer in (x-y,x+z) 
 genRand:{[y;x;z]
@@ -12,14 +12,14 @@ genRand:{[y;x;z]
 / Generates new bid
 bidGen:{[lastBid;lastAsk]
 	$[0=lastAsk-lastBid;
-		genRand[2*v;lastBid;v:lastBid*cfg`bidVar]; / we could talk about this 2*v
-		genRand[0;lastBid;0.5+(lastAsk-lastBid)*cfg`bidVar]]
+		genRand[2*v;lastBid;v:lastBid*cfg[`bidVar;`val]]; / we could talk about this 2*v
+		genRand[0;lastBid;0.5+(lastAsk-lastBid)*cfg[`bidVar;`val]]]
  }
 
 / Generates new bid size
 bidSizeGen:{[lastBid;lastAsk]
 	$[0=lastAsk-lastBid;
-		genRand[v;lastBidSize;v:(lastBidSize:last t`bidSize)*cfg`bidSizeVar];
+		genRand[v;lastBidSize;v:(lastBidSize:last t`bidSize)*cfg[`bidSizeVar;`val]];
 		last t`bidSize]
  }
 
@@ -27,8 +27,8 @@ bidSizeGen:{[lastBid;lastAsk]
 askBidGen:{[lastBid;lastAsk]
 	newBid:bidGen[lastBid;lastAsk];
 	$[0=lastAsk-lastBid;
-		newAsk:max(newBid;genRand[v;lastAsk;v:lastAsk*cfg`askVar]);
-		newAsk:max(newBid;genRand[0.5+(lastAsk-newBid)*cfg`askVar;lastAsk;0])];
+		newAsk:max(newBid;genRand[v;lastAsk;v:lastAsk*cfg[`askVar;`val]]);
+		newAsk:max(newBid;genRand[0.5+(lastAsk-newBid)*cfg[`askVar;`val];lastAsk;0])];
 
 	`bid`ask!newBid,newAsk
  }
@@ -36,7 +36,7 @@ askBidGen:{[lastBid;lastAsk]
 / Generates new ask Size
 askSizeGen:{[lastBid;lastAsk]
 	$[0=lastAsk-lastBid;
-		genRand[v;lastAskSize;v:(lastAskSize:last t`askSize)*cfg`askSizeVar];
+		genRand[v;lastAskSize;v:(lastAskSize:last t`askSize)*cfg[`askSizeVar;`val]];
 		last t`askSize]
  }
 

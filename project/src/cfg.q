@@ -1,3 +1,9 @@
-/ Define dictionary of configuration parameters.
+/ Define configuration parameters.
 
-cfg:`askVar`bidVar`bidSizeVar`askSizeVar!0.1 0.1 0.1 0.1
+
+/ Reads cfg initial table
+cfg:1!("SFCS"; enlist ",") 0: `:/Users/lucascalixto/git/lucas/project/cfg/params.csv
+
+
+/ Run the init function
+/.cfg.init[]
