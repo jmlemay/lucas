@@ -1,48 +1,65 @@
 / Initialize data table.
-t:([]sym:enlist`MSFT;bid:enlist 50;bidSize:enlist 10;ask:enlist 80;askSize:enlist 30;time:.z.p)
+t:([]sym:enlist`MSFT;bid:enlist 50;bidSize:enlist 10;ask:enlist 80;askSize:enlist 30;time:.z.p) //! Temporary
 
-//! Needs documentation.
-bidGen:{[lastBid;lastAsk]
-	$[0=lastAsk-lastBid;
-		first[t`bid]+floor 0.5+rand[0.1*a]-rand 0.1*a:first t`bid;
-		lastBid+rand ceiling[rand abs 0.1*1+lastAsk-lastBid],0]
+/ Gets a file handle.
+/ @param relPath	{string}	Relative path (from project root) to file.
+getFileHandle:{[relPath]
+	hsym`$getenv[`DB_PROJECT_HOME],"/",relPath
  }
 
-//! Needs documentation.
+/ Reads variance parameters from params.csv.
+cfg:1!("SFCS";enlist",")0:getFileHandle"cfg/params.csv"
+
+/ Append quoteGen to table
+tableGen:{[x;y]
+	t,:quoteGen[x;y]
+ }
+
+/ generates new quote based on last quote
+quoteGen:{[lastBid;lastAsk]
+	a:askBidGen[lastBid;lastAsk]; / Generate new ask and bid
+	newBidSize:bidSizeGen[lastBid;lastAsk]; / Get new bid size 
+	newAskSize:askSizeGen[lastBid;lastAsk]; / Get new ask size
+	enlist`MSFT,a[`bid],newBidSize,a[`ask],newAskSize,.z.p / Return table row
+ }
+
+/ Generates new ask based on last new bid
+askBidGen:{[lastBid;lastAsk]
+	newBid:bidGen[lastBid;lastAsk];
+
+	$[lastAsk=lastBid;
+		newAsk:max(newBid;genRand[v;lastAsk;v:lastAsk*cfg[`askVar;`val]]);
+		newAsk:max(newBid;genRand[0.5+(lastAsk-newBid)*cfg[`askVar;`val];lastAsk;0])];
+
+	`bid`ask!newBid,newAsk
+ }
+
+/ Generates new bid size
 bidSizeGen:{[lastBid;lastAsk]
 	$[0=lastAsk-lastBid;
-		last[t`bidSize]+floor 0.5+rand[0.1*last t`bidSize]-rand 0.1*last t`bidSize; 
+		genRand[v;lastBidSize;v:(lastBidSize:last t`bidSize)*cfg[`bidSizeVar;`val]];
 		last t`bidSize]
  }
 
-//! Needs documentation.
-askGen:{[lastBid;lastAsk]
-	newBid:bidGen[lastBid;lastAsk];
-
-    $[0=lastAsk-lastBid;
-		newAsk:max(newBid;first[t`ask]+floor 0.5+rand[0.1*b]-rand 0.1*b:first t`ask);
-		newAsk:max(newBid;lastAsk-rand(ceiling rand abs 0.1*1+lastAsk-newBid),0)];
-
-	newBid,newAsk
- }
-
-//! Needs documentation.
+/ Generates new ask Size
 askSizeGen:{[lastBid;lastAsk]
-    $[0=lastAsk-lastBid;
-		last[t`askSize]+floor 0.5+rand[0.1*last t`askSize]-rand 0.1*last t`askSize; 
+	$[0=lastAsk-lastBid;
+		genRand[v;lastAskSize;v:(lastAskSize:last t`askSize)*cfg[`askSizeVar;`val]];
 		last t`askSize]
  }
 
-//! Needs documentation.
-quoteGen:{[lastBid;lastAsk]
-	newBid:askGen[lastBid;lastAsk][0]; 
-	newAsk:askGen[lastBid;lastAsk][1];
-	newBidSize:bidSizeGen[lastBid;lastAsk]; 
-	newAskSize:askSizeGen[lastBid;lastAsk];
-	enlist`MSFT,newBid,newBidSize,newAsk,newAskSize,.z.p
+/ Generates new bid
+bidGen:{[lastBid;lastAsk]
+	$[0=lastAsk-lastBid;
+		genRand[2*v;lastBid;v:lastBid*cfg[`bidVar;`val]]; / we could talk about this 2*v
+		genRand[0;lastBid;0.5+(lastAsk-lastBid)*cfg[`bidVar;`val]]]
  }
 
-//! Needs documentation.
-tableGen:{[x;y]
-	t,:quoteGen[x;y]
+/ Generates a random integer within a non-symetric interval. //! Use this style everywhere
+/ @param left	{number}	Size of left radius.
+/ @param mid	{number}	"Centre" of the interval.
+/ @param right	{number}	Size of right radius.
+/ @return		{long}		A random number within (mid-left, mid+right).
+genRand:{[left;mid;right]
+	"j"$mid+rand["f"$left+right]-left
  }
